@@ -15,6 +15,7 @@ const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY
 const USE_GAS_REPORT = process.env.USE_GAS_REPORT
+const GAS_REPORT_TOKEN = process.env.GAS_REPORT_TOKEN ? process.env.GAS_REPORT_TOKEN : "ETH"
 
 module.exports = {
     defaultNetwork: "hardhat",
@@ -41,7 +42,7 @@ module.exports = {
         polygonMumbai: {
             chainId: 80001,
             blockConfirmations: 6,
-            url: GOERLI_RPC_URL,
+            url: POLYMUMBAI_RPC_URL,
             accounts: [PRIVATE_KEY],
         },
         localhost: {
@@ -49,18 +50,21 @@ module.exports = {
         },
     },
     etherscan: {
-        mainnet: "",
-        rinkeby: ETHERSCAN_API_KEY,
-        goerli: ETHERSCAN_API_KEY,
-        polygon: "",
-        polygonMumbai: POLYGONSCAN_API_KEY,
+        apiKey: {
+            mainnet: "",
+            rinkeby: ETHERSCAN_API_KEY,
+            goerli: ETHERSCAN_API_KEY,
+            polygon: "",
+            polygonMumbai: POLYGONSCAN_API_KEY,
+        },
     },
     gasReporter: {
         enabled: USE_GAS_REPORT,
         currency: "USD",
-        outputFile: "gas-report.txt",
+        outputFile: "reports/gas-report.txt",
         noColors: true,
-        coinmarketcap: process.env.COINMARKETCAP_API_KEY,
+        coinmarketcap: COINMARKETCAP_API_KEY,
+        token: GAS_REPORT_TOKEN,
     },
     solidity: {
         compilers: [{ version: "0.8.7" }],

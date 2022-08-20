@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -13,7 +15,7 @@ error ChainBattles__TokenIDNotExists();
 error ChainBattles__NotApprovedOrOwner();
 error ChainBattles__WithdrawFailed();
 
-contract ChainBattles is ERC721URIStorage, Ownable {
+contract ChainBattles is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     using Strings for uint256;
     using Counters for Counters.Counter;
 
@@ -23,6 +25,9 @@ contract ChainBattles is ERC721URIStorage, Ownable {
     Counters.Counter private s_tokenIds;
 
     mapping(uint256 => uint256) private s_tokenIdToLevels;
+
+    event MintedNft(uint256 indexed tokenId);
+    event TrainedNft(uint256 indexed tokenId, uint256 level);
 
     constructor(
         string memory tokenName,
@@ -50,6 +55,8 @@ contract ChainBattles is ERC721URIStorage, Ownable {
         _safeMint(msg.sender, newTokenId);
         s_tokenIdToLevels[newTokenId] = 0;
         _setTokenURI(newTokenId, getTokenURI(newTokenId));
+
+        emit MintedNft(newTokenId);
     }
 
     // TRAIN
@@ -58,12 +65,15 @@ contract ChainBattles is ERC721URIStorage, Ownable {
             revert ChainBattles__TokenIDNotExists();
         }
 
-        if (_isApprovedOrOwner(msg.sender, tokenId)) {
+        if (!_isApprovedOrOwner(msg.sender, tokenId)) {
             revert ChainBattles__NotApprovedOrOwner();
         }
 
-        s_tokenIdToLevels[tokenId] = s_tokenIdToLevels[tokenId] + 1;
+        uint256 newLevel = s_tokenIdToLevels[tokenId] + 1;
+        s_tokenIdToLevels[tokenId] = newLevel;
         _setTokenURI(tokenId, getTokenURI(tokenId));
+
+        emit TrainedNft(tokenId, newLevel);
     }
 
     // WITHDRAW
@@ -75,6 +85,41 @@ contract ChainBattles is ERC721URIStorage, Ownable {
         if (!success) {
             revert ChainBattles__WithdrawFailed();
         }
+    }
+
+    function setWithdrawalAddress(address newOwner) public onlyOwner {
+        s_withdrawalAddress = payable(newOwner);
+    }
+
+    // OVERRIDES
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override(ERC721, ERC721Enumerable) {
+        super._beforeTokenTransfer(from, to, tokenId);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC721, ERC721Enumerable)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
+    }
+
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        override(ERC721, ERC721URIStorage)
+        returns (string memory)
+    {
+        return super.tokenURI(tokenId);
+    }
+
+    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
+        super._burn(tokenId);
     }
 
     // FUNCTIONALITIES
@@ -126,5 +171,9 @@ contract ChainBattles is ERC721URIStorage, Ownable {
 
     function getMinted() public view returns (uint256) {
         return s_tokenIds.current();
+    }
+
+    function getWithdrawalAddress() public view returns (address) {
+        return s_withdrawalAddress;
     }
 }

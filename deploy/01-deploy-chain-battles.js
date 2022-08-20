@@ -13,7 +13,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const mintFee = networkConfig[chainId].mintFee || 0
     const maxSupply = networkConfig[chainId].maxSupply || 0
 
-    const verifyApiKey = etherscan[network.name] || ""
+    const verifyApiKey = etherscan.apiKey[network.name] || ""
 
     log("-----------------------------------")
 
