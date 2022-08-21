@@ -18,6 +18,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     log("-----------------------------------")
 
     const args = [tokenName, tokenSymbol, mintFee, maxSupply]
+    //const args = []
     const contract = await deploy(contractName, {
         from: deployer,
         args: args,

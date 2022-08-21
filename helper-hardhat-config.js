@@ -15,7 +15,7 @@ const networkConfig = {
     },
     80001: {
         name: "polygonMumbai",
-        mintFee: ethers.utils.parseEther("0.01"),
+        mintFee: ethers.utils.parseEther("0"),
         minters: 5,
         maxSupply: 5,
     },
